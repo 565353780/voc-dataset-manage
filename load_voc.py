@@ -195,6 +195,7 @@ class LabelCut(object):
             print("[ERROR][LabelCut::cutImage]")
             print("\t getObjectListWithLabel for cut_save_label_list failed!")
             return False
+
         return True
 
     def cutAllImage(self):

@@ -1,1 +1,4 @@
-# voc_image_cut
+# VOC Image Cut
+
+## Enjoy it~
+
