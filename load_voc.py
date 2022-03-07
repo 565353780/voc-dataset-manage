@@ -6,20 +6,29 @@ import cv2
 import xml.etree.ElementTree as ET
 
 class ObjectBBox(object):
-    def __init__(self):
-        self.name = ""
-        self.bbox = [] # xmin, ymin, xmax, ymax
+    def __init__(self, name, xmin, ymin, xmax, ymax):
+        self.name = name
+        self.bbox = [xmin, ymin, xmax, ymax]
         return
 
     def getTransBBox(self, x_start, y_start):
-        if len(self.bbox) == 0:
-            print("[ERROR][ObjectBBox::getTransBBox]")
-            print("bbox is empty!")
-            return None
         return [self.bbox[0] - x_start,
                 self.bbox[1] - y_start,
                 self.bbox[2] - x_start,
                 self.bbox[3] - y_start]
+
+    def getBBoxImage(self, image):
+        image_shape = image.shape
+        print("image_shape = ", image_shape)
+        bbox_image = image[self.bbox[1]:self.bbox[3], self.bbox[0]:self.bbox[2]]
+        return bbox_image
+
+    def outputInfo(self, info_level=0):
+        line_start = "\t" * info_level
+        print(line_start + "ObjectBBox:")
+        print(line_start + "\t name = " + self.name)
+        print(line_start + "\t bbox =", self.bbox)
+        return True
 
 class LabelCut(object):
     def __init__(self):
@@ -119,13 +128,13 @@ class LabelCut(object):
         height = int(size.find('height').text)
         return [width, height]
 
-    def getObjectList(self):
+    def getObjectBBoxList(self):
         '''
         Return :
-            [[name, xmin, ymin, xmax, ymax], ...]
+            [ObjectBBox(), ...]
         '''
         if self.root is None:
-            print("[ERROR][LabelCut::getObjectList]")
+            print("[ERROR][LabelCut::getObjectBBoxList]")
             print("\t not load any xml file!")
             return None
 
@@ -138,7 +147,9 @@ class LabelCut(object):
             ymin = int(bbox.find('ymin').text)
             xmax = int(bbox.find('xmax').text)
             ymax = int(bbox.find('ymax').text)
-            object_list.append([name, xmin, ymin, xmax, ymax])
+
+            obj_bbox = ObjectBBox(name, xmin, ymin, xmax, ymax)
+            object_list.append(obj_bbox)
         return object_list
 
     def getObjectListWithLabel(self, label_list):
@@ -146,7 +157,7 @@ class LabelCut(object):
         Input :
             [label_1, label_2, ...]
         Return :
-            [[name, xmin, ymin, xmax, ymax], ...]
+            [ObjectBBox(), ...]
         '''
         if self.root is None:
             print("[ERROR][LabelCut::getObjectListWithLabel]")
@@ -170,25 +181,10 @@ class LabelCut(object):
             ymin = int(bbox.find('ymin').text)
             xmax = int(bbox.find('xmax').text)
             ymax = int(bbox.find('ymax').text)
-            object_list_with_label.append([name, xmin, ymin, xmax, ymax])
+
+            obj_bbox = ObjectBBox(name, xmin, ymin, xmax, ymax)
+            object_list_with_label.append(obj_bbox)
         return object_list_with_label
-
-    def getObjectImage(self, object_bbox):
-        '''
-        Input :
-            [xmin, ymin, xmax, ymax]
-        Return :
-            object_image
-        '''
-        if self.image is None:
-            print("[ERROR][LabelCut::getObjectImage]")
-            print("\t not load any xml file!")
-            return None
-
-        xmin, ymin, xmax, ymax = object_bbox
-
-        object_image = self.image[ymin:ymax, xmin:xmax]
-        return object_image
 
     def cutImage(self, xml_file_basename, image_format):
         '''
@@ -223,9 +219,11 @@ class LabelCut(object):
             return False
 
         print("==========")
-        print(cut_by_object_list)
+        for cut_by_object in cut_by_object_list:
+            cut_by_object.outputInfo()
         print("--------")
-        print(cut_save_object_list)
+        for cut_save_object in cut_save_object_list:
+            cut_save_object.outputInfo()
         print("==========")
 
         return True
