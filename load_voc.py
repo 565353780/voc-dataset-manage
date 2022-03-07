@@ -5,6 +5,22 @@ import os
 import cv2
 import xml.etree.ElementTree as ET
 
+class ObjectBBox(object):
+    def __init__(self):
+        self.name = ""
+        self.bbox = [] # xmin, ymin, xmax, ymax
+        return
+
+    def getTransBBox(self, x_start, y_start):
+        if len(self.bbox) == 0:
+            print("[ERROR][ObjectBBox::getTransBBox]")
+            print("bbox is empty!")
+            return None
+        return [self.bbox[0] - x_start,
+                self.bbox[1] - y_start,
+                self.bbox[2] - x_start,
+                self.bbox[3] - y_start]
+
 class LabelCut(object):
     def __init__(self):
         self.source_image_folder_path = None
@@ -174,7 +190,12 @@ class LabelCut(object):
         object_image = self.image[ymin:ymax, xmin:xmax]
         return object_image
 
-    def cutImage(self):
+    def cutImage(self, xml_file_basename, image_format):
+        '''
+        Input :
+            xml_file_basename
+            image_format
+        '''
         if self.cut_by_label_list is None:
             print("[ERROR][LabelCut::cutImage]")
             print("\t cut_by_label_list is None!")
@@ -182,6 +203,11 @@ class LabelCut(object):
         if self.cut_save_label_list is None:
             print("[ERROR][LabelCut::cutImage]")
             print("\t cut_save_label_list is None!")
+            return False
+
+        if not self.loadXML(xml_file_basename, image_format):
+            print("[ERROR][LabelCut::cutImage]")
+            print("\t loadXML failed!")
             return False
 
         cut_by_object_list = self.getObjectListWithLabel(self.cut_by_label_list)
@@ -196,23 +222,54 @@ class LabelCut(object):
             print("\t getObjectListWithLabel for cut_save_label_list failed!")
             return False
 
+        print("==========")
+        print(cut_by_object_list)
+        print("--------")
+        print(cut_save_object_list)
+        print("==========")
+
         return True
 
-    def cutAllImage(self):
+    def cutAllImage(self, image_format):
+        '''
+        Input :
+            image_format
+        '''
+        cut_image_filename_list = os.listdir(self.source_image_folder_path)
+        cut_image_xml_filename_list = []
+
+        for cut_image_filename in cut_image_filename_list:
+            if cut_image_filename[-4:] != ".xml":
+                continue
+            if cut_image_filename[:-4] + image_format not in cut_image_filename_list:
+                continue
+            cut_image_xml_filename_list.append(cut_image_filename)
+        print(cut_image_xml_filename_list)
+
+        try_cut_success_count = 0
+
+        for cut_image_xml_filename in cut_image_xml_filename_list:
+            cut_image_xml_basename = cut_image_xml_filename[:-4]
+            if not self.cutImage(cut_image_xml_basename, image_format):
+                continue
+            try_cut_success_count += 1
+        print("try_cut_success_count = ",try_cut_success_count)
+
         return True
 
 def demo():
-    source_image_folder_path = "./1/"
-    cut_image_save_path = "./2/"
+    source_image_folder_path = "/home/chli/yolo/test/1/"
+    cut_image_save_path = "/home/chli/yolo/test/2/"
     cut_by_label_list = ["Container"]
     cut_save_label_list = ["Drop"]
+    image_format = ".jpg"
 
     label_cut = LabelCut()
     label_cut.setCutInfo(source_image_folder_path,
                          cut_image_save_path,
                          cut_by_label_list,
                          cut_save_label_list)
-    label_cut.cutAllImage()
+    label_cut.cutAllImage(image_format)
     return True
 
 if __name__ == "__main__":
