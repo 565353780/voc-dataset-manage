@@ -80,7 +80,7 @@ class XMLBuilder(object):
 
         source = ET.SubElement(self.root, "source")
         database = ET.SubElement(source, "database")
-        database.text = "UnKnown"
+        database.text = "Unknown"
 
         segmented = ET.SubElement(self.root, "segmented")
         segmented.text = "0"
@@ -108,6 +108,56 @@ class XMLBuilder(object):
         return True
 
     def addObject(self, obj):
+        new_object = ET.SubElement(self.root, "object")
+
+        name = ET.SubElement(new_object, "name")
+        name.text = obj.name
+
+        pose = ET.SubElement(new_object, "pose")
+        pose.text = "Unspecified"
+
+        truncated = ET.SubElement(new_object, "truncated")
+        truncated.text = "0"
+
+        difficult = ET.SubElement(new_object, "difficult")
+        difficult.text = "0"
+
+        bndbox = ET.SubElement(new_object, "bndbox")
+
+        xmin = ET.SubElement(bndbox, "xmin")
+        xmin.text = str(obj.bbox[0])
+
+        ymin = ET.SubElement(bndbox, "ymin")
+        ymin.text = str(obj.bbox[1])
+
+        xmax = ET.SubElement(bndbox, "xmax")
+        xmax.text = str(obj.bbox[2])
+
+        ymax = ET.SubElement(bndbox, "ymax")
+        ymax.text = str(obj.bbox[3])
+        return True
+
+    def prettyXml(self, element, indent="\t", newline="\n", level=0): 
+        if element:
+            if element.text == None or element.text.isspace():
+                element.text = newline + indent * (level + 1)
+            else:
+                element.text = newline + indent * (level + 1) + element.text.strip() + newline + indent * (level + 1)
+        temp = list(element)
+        for subelement in temp:
+            if temp.index(subelement) < (len(temp) - 1):
+                subelement.tail = newline + indent * (level + 1)
+            else:
+                subelement.tail = newline + indent * level
+            self.prettyXml(subelement, indent, newline, level = level + 1)
+        return True
+
+    def saveXML(self, xml_file_path):
+        print("save at ", xml_file_path)
+        self.prettyXml(self.root)
+        
+        tree = ET.ElementTree(self.root)
+        tree.write(xml_file_path, encoding="utf-8")
         return True
 
 class LabelCut(object):
@@ -313,6 +363,21 @@ class LabelCut(object):
             for child_object in child_object_list:
                 child_object.outputInfo()
 
+            current_cut_image_basename = \
+                xml_file_basename + "_" + str(current_save_object_idx) + "_" + cut_by_object.name
+
+            current_cut_image_width = cut_by_object.bbox[2] - cut_by_object.bbox[0]
+            current_cut_image_height = cut_by_object.bbox[3] - cut_by_object.bbox[1]
+            current_cut_image_depth = 3
+
+            xml_builder = XMLBuilder()
+            xml_builder.initXML()
+            xml_builder.setImageFilePath(self.cut_image_save_path + current_cut_image_basename + image_format)
+            xml_builder.setImageSize(current_cut_image_width, current_cut_image_height, current_cut_image_depth)
+            for child_object in child_object_list:
+                xml_builder.addObject(child_object)
+
+            xml_builder.saveXML(self.cut_image_save_path + current_cut_image_basename + ".xml")
         return True
 
     def cutAllImage(self, image_format):
@@ -357,8 +422,5 @@ def demo():
     return True
 
 if __name__ == "__main__":
-    xml_builder = XMLBuilder()
-    xml_builder.initXML()
-    xml_builder.setImageFilePath("/home/chli/yolo/test/1/0_0.xml")
     demo()
 
