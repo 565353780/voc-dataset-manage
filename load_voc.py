@@ -370,6 +370,9 @@ class LabelCut(object):
             current_cut_image = cut_by_object.getBBoxImage(self.image)
             cv2.imwrite(current_cut_image_basepath + image_format, current_cut_image)
 
+            if len(child_object_list) == 0:
+                continue
+
             xml_builder = XMLBuilder()
             xml_builder.initXML()
             xml_builder.setImageFilePath(current_cut_image_basepath + image_format)
