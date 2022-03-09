@@ -4,6 +4,7 @@
 import os
 import cv2
 import xml.etree.ElementTree as ET
+from tqdm import tqdm
 
 class ImageObject(object):
     def __init__(self, name, xmin, ymin, xmax, ymax):
@@ -55,7 +56,6 @@ class ImageObject(object):
 
     def getBBoxImage(self, image):
         image_shape = image.shape
-        print("image_shape = ", image_shape)
         bbox_image = image[self.bbox[1]:self.bbox[3], self.bbox[0]:self.bbox[2]]
         return bbox_image
 
@@ -153,7 +153,6 @@ class XMLBuilder(object):
         return True
 
     def saveXML(self, xml_file_path):
-        print("save at ", xml_file_path)
         self.prettyXml(self.root)
         
         tree = ET.ElementTree(self.root)
@@ -360,24 +359,25 @@ class LabelCut(object):
                     continue
                 child_object_list.append(child_object)
 
-            for child_object in child_object_list:
-                child_object.outputInfo()
-
             current_cut_image_basename = \
                 xml_file_basename + "_" + str(current_save_object_idx) + "_" + cut_by_object.name
+            current_cut_image_basepath = self.cut_image_save_path + current_cut_image_basename
 
             current_cut_image_width = cut_by_object.bbox[2] - cut_by_object.bbox[0]
             current_cut_image_height = cut_by_object.bbox[3] - cut_by_object.bbox[1]
             current_cut_image_depth = 3
 
+            current_cut_image = cut_by_object.getBBoxImage(self.image)
+            cv2.imwrite(current_cut_image_basepath + image_format, current_cut_image)
+
             xml_builder = XMLBuilder()
             xml_builder.initXML()
-            xml_builder.setImageFilePath(self.cut_image_save_path + current_cut_image_basename + image_format)
+            xml_builder.setImageFilePath(current_cut_image_basepath + image_format)
             xml_builder.setImageSize(current_cut_image_width, current_cut_image_height, current_cut_image_depth)
             for child_object in child_object_list:
                 xml_builder.addObject(child_object)
 
-            xml_builder.saveXML(self.cut_image_save_path + current_cut_image_basename + ".xml")
+            xml_builder.saveXML(current_cut_image_basepath + ".xml")
         return True
 
     def cutAllImage(self, image_format):
@@ -395,15 +395,10 @@ class LabelCut(object):
                 continue
             cut_image_xml_filename_list.append(cut_image_filename)
 
-        try_cut_success_count = 0
-
-        for cut_image_xml_filename in cut_image_xml_filename_list:
+        for cut_image_xml_filename in tqdm(cut_image_xml_filename_list):
             cut_image_xml_basename = cut_image_xml_filename[:-4]
             if not self.cutImage(cut_image_xml_basename, image_format):
                 continue
-            try_cut_success_count += 1
-        print("try_cut_success_count = ",try_cut_success_count)
-
         return True
 
 def demo():
