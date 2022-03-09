@@ -5,7 +5,7 @@ import os
 import cv2
 import xml.etree.ElementTree as ET
 
-class ObjectBBox(object):
+class ImageObject(object):
     def __init__(self, name, xmin, ymin, xmax, ymax):
         self.name = name
         self.bbox = [xmin, ymin, xmax, ymax]
@@ -17,6 +17,42 @@ class ObjectBBox(object):
                 self.bbox[2] - x_start,
                 self.bbox[3] - y_start]
 
+    def haveThisChild(self, target_object):
+        '''
+        Input:
+            ImageObject
+        '''
+        target_object_bbox = target_object.bbox
+        if target_object_bbox[0] >= self.bbox[2] or \
+                target_object_bbox[1] >= self.bbox[3] or \
+                target_object_bbox[2] <= self.bbox[0] or \
+                target_object_bbox[3] <= self.bbox[1]:
+            return False
+        return True
+
+    def getChild(self, target_object):
+        '''
+        Input:
+            target_object : ImageObject
+        Return:
+            child_object : ImageObject
+            None if union is empty
+        '''
+        if not self.haveThisChild(target_object):
+            return None
+        
+        trans_bbox = target_object.getTransBBox(self.bbox[0], self.bbox[1])
+        valid_child_bbox = [max(0, trans_bbox[0]),
+                            max(0, trans_bbox[1]),
+                            min(self.bbox[2] - self.bbox[0], trans_bbox[2]),
+                            min(self.bbox[3] - self.bbox[1], trans_bbox[3])]
+        child_object = ImageObject(target_object.name,
+                                   valid_child_bbox[0],
+                                   valid_child_bbox[1],
+                                   valid_child_bbox[2],
+                                   valid_child_bbox[3])
+        return child_object
+
     def getBBoxImage(self, image):
         image_shape = image.shape
         print("image_shape = ", image_shape)
@@ -25,9 +61,53 @@ class ObjectBBox(object):
 
     def outputInfo(self, info_level=0):
         line_start = "\t" * info_level
-        print(line_start + "ObjectBBox:")
+        print(line_start + "ImageObject:")
         print(line_start + "\t name = " + self.name)
         print(line_start + "\t bbox =", self.bbox)
+        return True
+
+class XMLBuilder(object):
+    def __init__(self):
+        self.root = None
+        return
+
+    def initXML(self):
+        self.root = None
+        self.root = ET.Element("annotation")
+
+        folder = ET.SubElement(self.root, "folder")
+        folder.text = "test"
+
+        source = ET.SubElement(self.root, "source")
+        database = ET.SubElement(source, "database")
+        database.text = "UnKnown"
+
+        segmented = ET.SubElement(self.root, "segmented")
+        segmented.text = "0"
+        return True
+
+    def setImageFilePath(self, image_file_path):
+        image_file_path_split_list = image_file_path.split("/")
+        image_file_name = image_file_path_split_list[-1]
+
+        filename = ET.SubElement(self.root, "filename")
+        filename.text = image_file_name
+
+        path = ET.SubElement(self.root, "path")
+        path.text = image_file_path
+        return True
+
+    def setImageSize(self, image_width, image_height, image_depth):
+        size = ET.SubElement(self.root, "size")
+        width = ET.SubElement(size, "width")
+        width.text = str(image_width)
+        height = ET.SubElement(size, "height")
+        height.text = str(image_height)
+        depth = ET.SubElement(size, "depth")
+        depth.text = str(image_depth)
+        return True
+
+    def addObject(self, obj):
         return True
 
 class LabelCut(object):
@@ -131,7 +211,7 @@ class LabelCut(object):
     def getObjectBBoxList(self):
         '''
         Return :
-            [ObjectBBox(), ...]
+            [ImageObject(), ...]
         '''
         if self.root is None:
             print("[ERROR][LabelCut::getObjectBBoxList]")
@@ -148,8 +228,8 @@ class LabelCut(object):
             xmax = int(bbox.find('xmax').text)
             ymax = int(bbox.find('ymax').text)
 
-            obj_bbox = ObjectBBox(name, xmin, ymin, xmax, ymax)
-            object_list.append(obj_bbox)
+            obj = ImageObject(name, xmin, ymin, xmax, ymax)
+            object_list.append(obj)
         return object_list
 
     def getObjectListWithLabel(self, label_list):
@@ -157,7 +237,7 @@ class LabelCut(object):
         Input :
             [label_1, label_2, ...]
         Return :
-            [ObjectBBox(), ...]
+            [ImageObject(), ...]
         '''
         if self.root is None:
             print("[ERROR][LabelCut::getObjectListWithLabel]")
@@ -182,8 +262,8 @@ class LabelCut(object):
             xmax = int(bbox.find('xmax').text)
             ymax = int(bbox.find('ymax').text)
 
-            obj_bbox = ObjectBBox(name, xmin, ymin, xmax, ymax)
-            object_list_with_label.append(obj_bbox)
+            obj = ImageObject(name, xmin, ymin, xmax, ymax)
+            object_list_with_label.append(obj)
         return object_list_with_label
 
     def cutImage(self, xml_file_basename, image_format):
@@ -218,13 +298,20 @@ class LabelCut(object):
             print("\t getObjectListWithLabel for cut_save_label_list failed!")
             return False
 
-        print("==========")
+        current_save_object_idx = 0
+
         for cut_by_object in cut_by_object_list:
-            cut_by_object.outputInfo()
-        print("--------")
-        for cut_save_object in cut_save_object_list:
-            cut_save_object.outputInfo()
-        print("==========")
+            current_save_object_idx += 1
+
+            child_object_list = []
+            for cut_save_object in cut_save_object_list:
+                child_object = cut_by_object.getChild(cut_save_object)
+                if child_object is None:
+                    continue
+                child_object_list.append(child_object)
+
+            for child_object in child_object_list:
+                child_object.outputInfo()
 
         return True
 
@@ -242,7 +329,6 @@ class LabelCut(object):
             if cut_image_filename[:-4] + image_format not in cut_image_filename_list:
                 continue
             cut_image_xml_filename_list.append(cut_image_filename)
-        print(cut_image_xml_filename_list)
 
         try_cut_success_count = 0
 
@@ -271,5 +357,8 @@ def demo():
     return True
 
 if __name__ == "__main__":
+    xml_builder = XMLBuilder()
+    xml_builder.initXML()
+    xml_builder.setImageFilePath("/home/chli/yolo/test/1/0_0.xml")
     demo()
 
