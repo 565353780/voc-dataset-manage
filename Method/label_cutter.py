@@ -92,28 +92,13 @@ class LabelCutter(object):
         self.image = cv2.imread(image_file_path)
         return True
 
-    def getSize(self):
-        '''
-        Return :
-            [width, height]
-        '''
-        if self.root is None:
-            print("[ERROR][LabelCutter::getSize]")
-            print("\t not load any xml file!")
-            return None
-
-        size = self.root.find('size')
-        width = int(size.find('width').text)
-        height = int(size.find('height').text)
-        return [width, height]
-
-    def getObjectBBoxList(self):
+    def getObjectList(self):
         '''
         Return :
             [ImageObject(), ...]
         '''
         if self.root is None:
-            print("[ERROR][LabelCutter::getObjectBBoxList]")
+            print("[ERROR][LabelCutter::getObjectList]")
             print("\t not load any xml file!")
             return None
 
@@ -134,7 +119,7 @@ class LabelCutter(object):
     def getObjectListWithLabel(self, label_list):
         '''
         Input :
-            [label_1, label_2, ...]
+            label_list : [label_1, label_2, ...]
         Return :
             [ImageObject(), ...]
         '''
