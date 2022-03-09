@@ -41,7 +41,7 @@ class ImageObject(object):
         '''
         if not self.haveThisChild(target_object):
             return None
-        
+
         trans_bbox = target_object.getTransBBox(self.bbox[0], self.bbox[1])
         valid_child_bbox = [max(0, trans_bbox[0]),
                             max(0, trans_bbox[1]),
@@ -137,7 +137,7 @@ class XMLBuilder(object):
         ymax.text = str(obj.bbox[3])
         return True
 
-    def prettyXml(self, element, indent="\t", newline="\n", level=0): 
+    def prettyXml(self, element, indent="\t", newline="\n", level=0):
         if element:
             if element.text == None or element.text.isspace():
                 element.text = newline + indent * (level + 1)
@@ -154,7 +154,7 @@ class XMLBuilder(object):
 
     def saveXML(self, xml_file_path):
         self.prettyXml(self.root)
-        
+
         tree = ET.ElementTree(self.root)
         tree.write(xml_file_path, encoding="utf-8")
         return True
