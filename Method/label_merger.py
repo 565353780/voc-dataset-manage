@@ -84,15 +84,13 @@ class LabelMerger(object):
             xml_file_basename
             image_format
         '''
-        self.xml_file_basename = xml_file_basename
-
-        xml_file_path = self.source_image_folder_path + self.xml_file_basename + ".xml"
+        xml_file_path = self.source_image_folder_path + xml_file_basename + ".xml"
         if not os.path.exists(xml_file_path):
             print("[ERROR][LabelMerger::loadXML]")
             print("\t xml_file not exist in source_image_folder_path!")
             return False
 
-        image_file_path = self.source_image_folder_path + self.xml_file_basename + image_format
+        image_file_path = self.source_image_folder_path + xml_file_basename + image_format
         if not os.path.exists(image_file_path):
             print("[ERROR][LabelMerger::loadXML]")
             print("\t image_file not exist in source_image_folder_path!")
@@ -178,4 +176,45 @@ class LabelMerger(object):
             object_list_with_label.append(obj)
         return object_list_with_label
 
-    def mergeImage(self, )
+    def mergeImage(self, xml_file_basename_list, image_format):
+        '''
+        Input :
+            xml_file_basename_list : [xml_file_basename_1, ...]
+            image_format : str e.g. ".jpg"
+        '''
+        if len(xml_file_basename_list) == 0:
+            print("[ERROR][LabelMerger::mergeImage]")
+            print("\t xml_file_basename_list is empty!")
+            return False
+
+        if self.merge_save_label_list is None:
+            print("[ERROR][LabelMerger::mergeImage]")
+            print("\t merge_save_label_list is None!")
+            return False
+        if self.merge_row_image_num is None:
+            print("[ERROR][LabelMerger::mergeImage]")
+            print("\t merge_row_image_num is None!")
+            return False
+        if self.merge_col_image_num is None:
+            print("[ERROR][LabelMerger::mergeImage]")
+            print("\t merge_col_image_num is None!")
+            return False
+        if self.is_row_merge_first is None:
+            print("[ERROR][LabelMerger::mergeImage]")
+            print("\t is_row_merge_first is None!")
+            return False
+
+        if not self.clearImage():
+            print("[ERROR][LabelMerger::mergeImage]")
+            print("\t clearImage failed!")
+            return False
+
+        for xml_file_basename in xml_file_basename_list:
+            if not self.loadXML(xml_file_basename, image_format):
+                print("[ERROR][LabelMerger::mergeImage]")
+                print("\t loadXML failed!")
+                return False
+
+        image_bbox_matrix = []
+        return True
+

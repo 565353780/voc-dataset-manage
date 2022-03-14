@@ -16,7 +16,6 @@ class LabelCutter(object):
         self.cut_by_label_list = None
         self.cut_save_label_list = None
 
-        self.xml_file_basename = None
         self.root = None
         self.image = None
         return
@@ -72,16 +71,15 @@ class LabelCutter(object):
             xml_file_basename
             image_format
         '''
-        self.xml_file_basename = xml_file_basename
         self.root = None
 
-        xml_file_path = self.source_image_folder_path + self.xml_file_basename + ".xml"
+        xml_file_path = self.source_image_folder_path + xml_file_basename + ".xml"
         if not os.path.exists(xml_file_path):
             print("[ERROR][LabelCutter::loadXML]")
             print("\t xml_file not exist in source_image_folder_path!")
             return False
 
-        image_file_path = self.source_image_folder_path + self.xml_file_basename + image_format
+        image_file_path = self.source_image_folder_path + xml_file_basename + image_format
         if not os.path.exists(image_file_path):
             print("[ERROR][LabelCutter::loadXML]")
             print("\t image_file not exist in source_image_folder_path!")
@@ -153,8 +151,8 @@ class LabelCutter(object):
     def cutImage(self, xml_file_basename, image_format):
         '''
         Input :
-            xml_file_basename
-            image_format
+            xml_file_basename : str
+            image_format : str e.g. ".jpg"
         '''
         if self.cut_by_label_list is None:
             print("[ERROR][LabelCutter::cutImage]")
