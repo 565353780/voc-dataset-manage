@@ -322,7 +322,6 @@ class LabelMerger(object):
         merge_image_width = 0
         merge_image_height = 0
         merge_image_channels = 3
-
         for image_position in image_position_list:
             merge_image_width = max(merge_image_width, image_position[2])
             merge_image_height = max(merge_image_height, image_position[3])
@@ -330,6 +329,8 @@ class LabelMerger(object):
         merge_image = np.zeros(
             (merge_image_height, merge_image_width, merge_image_channels),
             dtype=np.uint8)
+
+        merge_object_list = []
 
         for image_idx in range(len(self.image_list)):
             current_image = self.image_list[image_idx]
@@ -340,7 +341,17 @@ class LabelMerger(object):
                 current_image_position[0]:current_image_position[2],
                 :] = current_image[:, :, :]
 
-        cv2.imshow("merge_image", merge_image)
+            current_object_list = self.getObjectListWithLabel(image_idx,
+                                                              self.merge_save_label_list)
+
+            for current_object in current_object_list:
+                current_merge_object = current_object.
+
+        resized_merge_image = cv2.resize(merge_image,
+                                         (1600, 1600),
+                                         interpolation=cv2.INTER_AREA)
+
+        cv2.imshow("merge_image", resized_merge_image)
         cv2.waitKey(0)
         return True
 

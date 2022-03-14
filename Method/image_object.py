@@ -13,6 +13,12 @@ class ImageObject(object):
                 self.bbox[2] - x_start,
                 self.bbox[3] - y_start]
 
+    def getMovedBBox(self, x_start, y_start):
+        return [self.bbox[0] + x_start,
+                self.bbox[1] + y_start,
+                self.bbox[2] + x_start,
+                self.bbox[3] + y_start]
+
     def haveThisChild(self, target_object):
         '''
         Input:
