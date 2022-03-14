@@ -3,7 +3,9 @@
 
 import os
 import cv2
+import numpy as np
 import xml.etree.ElementTree as ET
+from random import randint
 from tqdm import tqdm
 
 from Method.image_object import ImageObject
@@ -85,10 +87,11 @@ class LabelMerger(object):
             image_format
         '''
         xml_file_path = self.source_image_folder_path + xml_file_basename + ".xml"
-        if not os.path.exists(xml_file_path):
-            print("[ERROR][LabelMerger::loadXML]")
-            print("\t xml_file not exist in source_image_folder_path!")
-            return False
+        if os.path.exists(xml_file_path):
+            tree = ET.parse(xml_file_path)
+            self.root_list.append(tree.getroot())
+        else:
+            self.root_list.append(None)
 
         image_file_path = self.source_image_folder_path + xml_file_basename + image_format
         if not os.path.exists(image_file_path):
@@ -96,8 +99,6 @@ class LabelMerger(object):
             print("\t image_file not exist in source_image_folder_path!")
             return False
 
-        tree = ET.parse(xml_file_path)
-        self.root_list.append(tree.getroot())
         self.image_list.append(cv2.imread(image_file_path))
         return True
 
@@ -116,9 +117,7 @@ class LabelMerger(object):
         root = self.root_list[root_idx]
 
         if root is None:
-            print("[ERROR][LabelMerger::getObjectList]")
-            print("\t not load any xml file!")
-            return None
+            return []
 
         object_list = []
 
@@ -150,9 +149,7 @@ class LabelMerger(object):
         root = self.root_list[root_idx]
 
         if root is None:
-            print("[ERROR][LabelMerger::getObjectListWithLabel]")
-            print("\t not load any xml file!")
-            return None
+            return []
 
         if label_list is None:
             print("[WARN][LabelMerger::getObjectListWithLabel]")
@@ -203,14 +200,14 @@ class LabelMerger(object):
 
                 row_first_image_position_list.append(
                     [image_used_width, image_used_height,
-                     image_used_width + current_image_shape[0],
-                     image_used_height + current_image_shape[1]])
+                     image_used_width + current_image_shape[1],
+                     image_used_height + current_image_shape[0]])
 
-                image_used_height += current_image_shape[1]
+                image_used_height += current_image_shape[0]
 
                 current_max_image_width = max(
                     current_max_image_width,
-                    current_image_shape[0])
+                    current_image_shape[1])
             image_used_width += current_max_image_width
 
         return row_first_image_position_list
@@ -242,14 +239,14 @@ class LabelMerger(object):
 
                 col_first_image_position_list.append(
                     [image_used_width, image_used_height,
-                     image_used_width + current_image_shape[0],
-                     image_used_height + current_image_shape[1]])
+                     image_used_width + current_image_shape[1],
+                     image_used_height + current_image_shape[0]])
 
-                image_used_width += current_image_shape[0]
+                image_used_width += current_image_shape[1]
 
                 current_max_image_height = max(
                     current_max_image_height,
-                    current_image_shape[1])
+                    current_image_shape[0])
             image_used_height += current_max_image_height
 
         return col_first_image_position_list
@@ -317,7 +314,34 @@ class LabelMerger(object):
 
         image_position_list = self.getImagePositionList()
 
-        print(image_position_list)
+        if image_position_list is None:
+            print("[ERROR][LabelMerger::mergeImage]")
+            print("\t getImagePositionList failed!")
+            return False
+
+        merge_image_width = 0
+        merge_image_height = 0
+        merge_image_channels = 3
+
+        for image_position in image_position_list:
+            merge_image_width = max(merge_image_width, image_position[2])
+            merge_image_height = max(merge_image_height, image_position[3])
+
+        merge_image = np.zeros(
+            (merge_image_height, merge_image_width, merge_image_channels),
+            dtype=np.uint8)
+
+        for image_idx in range(len(self.image_list)):
+            current_image = self.image_list[image_idx]
+            current_image_position = image_position_list[image_idx]
+
+            merge_image[
+                current_image_position[1]:current_image_position[3],
+                current_image_position[0]:current_image_position[2],
+                :] = current_image[:, :, :]
+
+        cv2.imshow("merge_image", merge_image)
+        cv2.waitKey(0)
         return True
 
     def mergeAllImage(self, merge_image_num, merge_image_time, image_format):
@@ -342,12 +366,13 @@ class LabelMerger(object):
 
         print("[INFO][LabelMerger::mergeAllImage]")
         print("start merge source image...")
-        for i in tqdm(range(merge_image_num)):
+        for _ in tqdm(range(merge_image_time)):
             xml_file_basename_list = []
-            for 
-        for merge_image_xml_filename in tqdm(merge_image_xml_filename_list):
-            merge_image_xml_basename = merge_image_xml_filename[:-4]
-            if not self.mergeImage(, image_format):
+            for _ in range(merge_image_num):
+                random_image_idx = randint(0, len(merge_image_xml_filename_list) - 1)
+                xml_file_basename_list.append(
+                    merge_image_xml_filename_list[random_image_idx][:-4])
+            if not self.mergeImage(xml_file_basename_list, image_format):
                 continue
         return True
 
