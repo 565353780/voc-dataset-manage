@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 from Method.label_cutter import LabelCutter
 
 if __name__ == "__main__":

@@ -250,9 +250,9 @@ def demo():
 
     label_cutter = LabelCutter()
     label_cutter.setCutInfo(source_image_folder_path,
-                         cut_image_save_path,
-                         cut_by_label_list,
-                         cut_save_label_list)
+                            cut_image_save_path,
+                            cut_by_label_list,
+                            cut_save_label_list)
     label_cutter.cutAllImage(image_format)
     return True
 

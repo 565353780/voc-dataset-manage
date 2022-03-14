@@ -176,6 +176,106 @@ class LabelMerger(object):
             object_list_with_label.append(obj)
         return object_list_with_label
 
+    def getRowFirstImagePositionList(self):
+        row_first_image_position_list = []
+
+        image_col_num = int(len(self.image_list) / self.merge_row_image_num)
+
+        last_col_image_num = len(self.image_list) % self.merge_row_image_num
+        if last_col_image_num > 0:
+            image_col_num += 1
+
+        image_used_width = 0
+
+        for image_col_idx in range(image_col_num):
+            current_image_start_idx = image_col_idx * self.merge_row_image_num
+
+            image_used_height = 0
+
+            current_max_image_width = 0
+            for i in range(self.merge_row_image_num):
+                current_image_idx = current_image_start_idx + i
+
+                if current_image_idx >= len(self.image_list):
+                    return row_first_image_position_list
+
+                current_image_shape = self.image_list[current_image_idx].shape
+
+                row_first_image_position_list.append(
+                    [image_used_width, image_used_height,
+                     image_used_width + current_image_shape[0],
+                     image_used_height + current_image_shape[1]])
+
+                image_used_height += current_image_shape[1]
+
+                current_max_image_width = max(
+                    current_max_image_width,
+                    current_image_shape[0])
+            image_used_width += current_max_image_width
+
+        return row_first_image_position_list
+
+    def getColFirstImagePositionList(self):
+        col_first_image_position_list = []
+
+        image_row_num = int(len(self.image_list) / self.merge_col_image_num)
+
+        last_row_image_num = len(self.image_list) % self.merge_col_image_num
+        if last_row_image_num > 0:
+            image_row_num += 1
+
+        image_used_height = 0
+
+        for image_row_idx in range(image_row_num):
+            current_image_start_idx = image_row_idx * self.merge_col_image_num
+
+            image_used_width = 0
+
+            current_max_image_height = 0
+            for i in range(self.merge_col_image_num):
+                current_image_idx = current_image_start_idx + i
+
+                if current_image_idx >= len(self.image_list):
+                    return col_first_image_position_list
+
+                current_image_shape = self.image_list[current_image_idx].shape
+
+                col_first_image_position_list.append(
+                    [image_used_width, image_used_height,
+                     image_used_width + current_image_shape[0],
+                     image_used_height + current_image_shape[1]])
+
+                image_used_width += current_image_shape[0]
+
+                current_max_image_height = max(
+                    current_max_image_height,
+                    current_image_shape[1])
+            image_used_height += current_max_image_height
+
+        return col_first_image_position_list
+
+    def getImagePositionList(self):
+        if self.merge_row_image_num is None:
+            print("[ERROR][LabelMerger::getImagePositionList]")
+            print("\t merge_row_image_num is None!")
+            return None
+        if self.merge_col_image_num is None:
+            print("[ERROR][LabelMerger::getImagePositionList]")
+            print("\t merge_col_image_num is None!")
+            return None
+        if self.is_row_merge_first is None:
+            print("[ERROR][LabelMerger::getImagePositionList]")
+            print("\t is_row_merge_first is None!")
+            return None
+        if len(self.image_list) == 0:
+            print("[WARN][LabelMerger::getImagePositionList]")
+            print("\t image_list is empty!")
+            return []
+
+        if self.is_row_merge_first:
+            return self.getRowFirstImagePositionList()
+        return self.getColFirstImagePositionList()
+
     def mergeImage(self, xml_file_basename_list, image_format):
         '''
         Input :
@@ -215,6 +315,65 @@ class LabelMerger(object):
                 print("\t loadXML failed!")
                 return False
 
-        image_bbox_matrix = []
+        image_position_list = self.getImagePositionList()
+
+        print(image_position_list)
         return True
+
+    def mergeAllImage(self, merge_image_num, merge_image_time, image_format):
+        if merge_image_num < 1:
+            print("[ERROR][LabelMerger::mergeAllImage]")
+            print("\t merge_image_num not valid!")
+            return False
+        if merge_image_time < 1:
+            print("[WARN][LabelMerger::mergeAllImage]")
+            print("\t merge_image_time not valid!")
+            return True
+
+        merge_image_filename_list = os.listdir(self.source_image_folder_path)
+        merge_image_xml_filename_list = []
+
+        print("[INFO][LabelMerger::mergeAllImage]")
+        print("start choose source image...")
+        for merge_image_filename in tqdm(merge_image_filename_list):
+            if merge_image_filename[-4:] != image_format:
+                continue
+            merge_image_xml_filename_list.append(merge_image_filename)
+
+        print("[INFO][LabelMerger::mergeAllImage]")
+        print("start merge source image...")
+        for i in tqdm(range(merge_image_num)):
+            xml_file_basename_list = []
+            for 
+        for merge_image_xml_filename in tqdm(merge_image_xml_filename_list):
+            merge_image_xml_basename = merge_image_xml_filename[:-4]
+            if not self.mergeImage(, image_format):
+                continue
+        return True
+
+def demo():
+    source_image_folder_path = "/home/chli/yolo/test/1/"
+    merge_image_save_path = "/home/chli/yolo/test/3/"
+    merge_save_label_list = ["Drop"]
+    merge_row_image_num = 2
+    merge_col_image_num = 5
+    is_row_merge_first = True
+    merge_image_num = 9
+    merge_image_time = 1
+    image_format = ".jpg"
+
+    label_merger = LabelMerger()
+    label_merger.setMergeInfo(source_image_folder_path,
+                              merge_image_save_path,
+                              merge_save_label_list,
+                              merge_row_image_num,
+                              merge_col_image_num,
+                              is_row_merge_first)
+    label_merger.mergeAllImage(merge_image_num,
+                               merge_image_time,
+                               image_format)
+    return True
+
+if __name__ == "__main__":
+    demo()
 
