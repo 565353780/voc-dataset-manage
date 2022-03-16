@@ -6,7 +6,7 @@ from Method.label_merger import LabelMerger
 if __name__ == "__main__":
     source_image_folder_path = "/home/chli/yolo/test/1/"
     merge_image_save_path = "/home/chli/yolo/test/3/"
-    merge_save_label_list = ["Drop"]
+    merge_save_label_list = ["dog"]
     merge_row_image_num = 2
     merge_col_image_num = 5
     is_row_merge_first = True

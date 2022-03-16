@@ -344,15 +344,23 @@ class LabelMerger(object):
             current_object_list = self.getObjectListWithLabel(image_idx,
                                                               self.merge_save_label_list)
 
+            print("image ", image_idx, "have ", len(current_object_list), "objects.")
+
             for current_object in current_object_list:
-                current_merge_object = current_object.
+                current_merge_object = current_object
+                current_merge_object.bbox = current_object.getMovedBBox(current_image_position[0],
+                                                                   current_image_position[1])
+                merge_object_list.append(current_merge_object)
+
+        for merge_object in merge_object_list:
+            merge_object.outputInfo(1)
 
         resized_merge_image = cv2.resize(merge_image,
                                          (1600, 1600),
                                          interpolation=cv2.INTER_AREA)
 
-        cv2.imshow("merge_image", resized_merge_image)
-        cv2.waitKey(0)
+        #  cv2.imshow("merge_image", resized_merge_image)
+        #  cv2.waitKey(0)
         return True
 
     def mergeAllImage(self, merge_image_num, merge_image_time, image_format):
