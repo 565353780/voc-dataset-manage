@@ -406,9 +406,9 @@ class LabelMerger(object):
         return True
 
 def demo():
-    source_image_folder_path = "/home/chli/yolo/test/1/"
-    merge_image_save_path = "/home/chli/yolo/test/3/"
-    merge_save_label_list = ["Drop"]
+    source_image_folder_path = "/home/chli/yolo/test/1_output/cut/"
+    merge_image_save_path = "/home/chli/yolo/test/1_output/merge/"
+    merge_save_label_list = ["drop"]
     merge_row_image_num = 2
     merge_col_image_num = 5
     is_row_merge_first = True

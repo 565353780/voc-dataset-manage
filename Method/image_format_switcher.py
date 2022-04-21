@@ -51,7 +51,7 @@ def switchImageFormat(source_image_folder_path, source_format, target_image_fold
 def demo():
     source_image_folder_path = "/home/chli/yolo/test/1/"
     source_format = ".jpg"
-    target_image_folder_path = "/home/chli/yolo/test/1_png/"
+    target_image_folder_path = "/home/chli/yolo/test/1_output/png/"
     target_format = ".png"
 
     switchImageFormat(source_image_folder_path,

@@ -3,6 +3,7 @@
 
 import os
 import xml.etree.ElementTree as ET
+from shutil import copyfile
 from tqdm import tqdm
 
 class YOLOBuilder(object):
@@ -40,7 +41,7 @@ class YOLOBuilder(object):
         w = int(size.find('width').text)
         h = int(size.find('height').text)
 
-        with open(self.save_folder_path + "labels/" + xml_file_basename + ".txt", 'w') as out_file:
+        with open(self.xml_folder_path + xml_file_basename + ".txt", 'w') as out_file:
             for obj in root.iter('object'):
                 difficult = obj.find('difficult').text
                 cls = obj.find('name').text
@@ -70,28 +71,27 @@ class YOLOBuilder(object):
                 return False
         else:
             os.makedirs(self.save_folder_path)
-            os.makedirs(self.save_folder_path + "labels/")
 
         xml_folder_filename_list = os.listdir(self.xml_folder_path)
-        image_file_basename_list = []
+        xml_file_basename_list = []
         for xml_folder_filename in xml_folder_filename_list:
             xml_folder_filename_split_list = xml_folder_filename.split(".")
             if "." + xml_folder_filename_split_list[1] != image_format:
                 continue
-            image_file_basename_list.append(xml_folder_filename_split_list[0])
+            xml_file_basename_list.append(xml_folder_filename_split_list[0])
 
         print("[INFO][YOLOBuilder::transLabel]")
         print("\t start convert annotations...")
         with open(self.save_folder_path + "train.txt", "w") as list_file:
-            for image_file_basename in tqdm(image_file_basename_list):
+            for image_file_basename in tqdm(xml_file_basename_list):
                 list_file.write(self.xml_folder_path + image_file_basename + image_format + "\n")
                 self.convertAnnotation(image_file_basename)
         return True
 
 def demo():
     classes = ["container", "drop", "zbar"]
-    xml_folder_path = "/home/chli/yolo/test/1_png/"
-    save_folder_path = "/home/chli/yolo/test/1_png_yolo/"
+    xml_folder_path = "/home/chli/yolo/test/1_output/merge/"
+    save_folder_path = "/home/chli/yolo/test/1_output/yolo/"
     image_format = ".png"
 
     yolo_builder = YOLOBuilder()

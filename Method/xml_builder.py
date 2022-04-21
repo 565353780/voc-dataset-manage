@@ -3,6 +3,8 @@
 
 import xml.etree.ElementTree as ET
 
+from Method.image_object import ImageObject
+
 class XMLBuilder(object):
     def __init__(self):
         self.root = None
@@ -95,4 +97,25 @@ class XMLBuilder(object):
         tree = ET.ElementTree(self.root)
         tree.write(xml_file_path, encoding="utf-8")
         return True
+
+def demo():
+    image_file_path = "/home/chli/yolo/test/1/0_0.jpg"
+    image_width = 1920
+    image_height = 1080
+    image_depth = 3
+    save_xml_file_path = "/home/chli/yolo/test/1/0_0.xml"
+
+    xml_builder = XMLBuilder()
+    xml_builder.initXML()
+    xml_builder.setImageFilePath(image_file_path)
+    xml_builder.setImageSize(image_width, image_height, image_depth)
+
+    image_object = ImageObject("target", 10, 10, 100, 100)
+    xml_builder.addObject(image_object)
+
+    xml_builder.saveXML(save_xml_file_path)
+    return True
+
+if __name__ == "__main__":
+    demo()
 
