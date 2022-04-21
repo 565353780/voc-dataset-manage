@@ -273,11 +273,12 @@ class LabelMerger(object):
             return self.getRowFirstImagePositionList()
         return self.getColFirstImagePositionList()
 
-    def mergeImage(self, xml_file_basename_list, image_format):
+    def mergeImage(self, merge_image_basename, xml_file_basename_list, image_format):
         '''
         Input :
+            merge_image_basename : str e.g. "0"
             xml_file_basename_list : [xml_file_basename_1, ...]
-            image_format : str e.g. ".jpg"
+            image_format : str e.g. ".png"
         '''
         if len(xml_file_basename_list) == 0:
             print("[ERROR][LabelMerger::mergeImage]")
@@ -321,13 +322,13 @@ class LabelMerger(object):
 
         merge_image_width = 0
         merge_image_height = 0
-        merge_image_channels = 3
+        merge_image_depth = 3
         for image_position in image_position_list:
             merge_image_width = max(merge_image_width, image_position[2])
             merge_image_height = max(merge_image_height, image_position[3])
 
         merge_image = np.zeros(
-            (merge_image_height, merge_image_width, merge_image_channels),
+            (merge_image_height, merge_image_width, merge_image_depth),
             dtype=np.uint8)
 
         merge_object_list = []
@@ -344,7 +345,7 @@ class LabelMerger(object):
             current_object_list = self.getObjectListWithLabel(image_idx,
                                                               self.merge_save_label_list)
 
-            print("image ", image_idx, "have ", len(current_object_list), "objects.")
+            #  print("image ", image_idx, "have ", len(current_object_list), "objects.")
 
             for current_object in current_object_list:
                 current_merge_object = current_object
@@ -352,15 +353,21 @@ class LabelMerger(object):
                                                                    current_image_position[1])
                 merge_object_list.append(current_merge_object)
 
+        merge_image_basepath = self.merge_image_save_path + merge_image_basename
+
+        cv2.imwrite(merge_image_basepath + image_format, merge_image)
+
+        if len(merge_object_list) == 0:
+            return True
+
+        xml_builder = XMLBuilder()
+        xml_builder.initXML()
+        xml_builder.setImageFilePath(merge_image_basepath + image_format)
+        xml_builder.setImageSize(merge_image_width, merge_image_height, merge_image_depth)
         for merge_object in merge_object_list:
-            merge_object.outputInfo(1)
+            xml_builder.addObject(merge_object)
 
-        resized_merge_image = cv2.resize(merge_image,
-                                         (1600, 1600),
-                                         interpolation=cv2.INTER_AREA)
-
-        #  cv2.imshow("merge_image", resized_merge_image)
-        #  cv2.waitKey(0)
+        xml_builder.saveXML(merge_image_basepath + ".xml")
         return True
 
     def mergeAllImage(self, merge_image_num, merge_image_time, image_format):
@@ -385,13 +392,13 @@ class LabelMerger(object):
 
         print("[INFO][LabelMerger::mergeAllImage]")
         print("start merge source image...")
-        for _ in tqdm(range(merge_image_time)):
+        for i in tqdm(range(merge_image_time)):
             xml_file_basename_list = []
             for _ in range(merge_image_num):
                 random_image_idx = randint(0, len(merge_image_xml_filename_list) - 1)
                 xml_file_basename_list.append(
                     merge_image_xml_filename_list[random_image_idx][:-4])
-            if not self.mergeImage(xml_file_basename_list, image_format):
+            if not self.mergeImage(str(i), xml_file_basename_list, image_format):
                 continue
         return True
 
@@ -404,7 +411,7 @@ def demo():
     is_row_merge_first = True
     merge_image_num = 9
     merge_image_time = 1
-    image_format = ".jpg"
+    image_format = ".png"
 
     label_merger = LabelMerger()
     label_merger.setMergeInfo(source_image_folder_path,
