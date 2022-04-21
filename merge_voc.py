@@ -3,7 +3,7 @@
 
 from Method.label_merger import LabelMerger
 
-if __name__ == "__main__":
+def demo():
     source_image_folder_path = "/home/chli/yolo/test/2/"
     merge_image_save_path = "/home/chli/yolo/test/3/"
     merge_save_label_list = ["drop"]
@@ -24,4 +24,8 @@ if __name__ == "__main__":
     label_merger.mergeAllImage(merge_image_num,
                                merge_image_time,
                                image_format)
+    return True
  
+if __name__ == "__main__":
+    demo()
+

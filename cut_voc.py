@@ -3,7 +3,7 @@
 
 from Method.label_cutter import LabelCutter
 
-if __name__ == "__main__":
+def demo():
     source_image_folder_path = "/home/chli/yolo/test/1_png/"
     cut_image_save_path = "/home/chli/yolo/test/2/"
     cut_by_label_list = ["container"]
@@ -16,4 +16,8 @@ if __name__ == "__main__":
                          cut_by_label_list,
                          cut_save_label_list)
     label_cutter.cutAllImage(image_format)
+    return True
+
+if __name__ == "__main__":
+    demo()
 

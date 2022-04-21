@@ -390,6 +390,9 @@ class LabelMerger(object):
                 continue
             merge_image_xml_filename_list.append(merge_image_filename)
 
+        if len(merge_image_xml_filename_list) == 0:
+            return True
+
         print("[INFO][LabelMerger::mergeAllImage]")
         print("start merge source image...")
         for i in tqdm(range(merge_image_time)):
