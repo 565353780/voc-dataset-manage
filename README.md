@@ -1,5 +1,24 @@
 # VOC Dataset Trans
 
+## Labeled Dataset
+
+please use
+
+```bash
+labelImg
+```
+
+and save .xml files in the default folder, make sure it looks like
+
+```bash
+<your-dataset-folder>
+ |----0.jpg
+ |----0.xml
+ |----1.jpg
+ |----1.xml
+ |----...
+```
+
 ## Install
 
 ```bash
