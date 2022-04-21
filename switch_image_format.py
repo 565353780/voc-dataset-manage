@@ -6,7 +6,7 @@ from Method.image_format_switcher import switchImageFormat
 def demo():
     source_image_folder_path = "/home/chli/yolo/test/1/"
     source_format = ".jpg"
-    target_image_folder_path = "/home/chli/yolo/test/1_png/"
+    target_image_folder_path = "/home/chli/yolo/test/1_output/png/"
     target_format = ".png"
 
     switchImageFormat(source_image_folder_path,

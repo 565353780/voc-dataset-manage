@@ -4,8 +4,8 @@
 from Method.label_merger import LabelMerger
 
 def demo():
-    source_image_folder_path = "/home/chli/yolo/test/2/"
-    merge_image_save_path = "/home/chli/yolo/test/3/"
+    source_image_folder_path = "/home/chli/yolo/test/1_output/cut/"
+    merge_image_save_path = "/home/chli/yolo/test/1_output/merge/"
     merge_save_label_list = ["drop"]
     merge_row_image_num = 2
     merge_col_image_num = 5

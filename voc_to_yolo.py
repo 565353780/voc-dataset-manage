@@ -5,8 +5,8 @@ from Method.yolo_builder import YOLOBuilder
 
 def demo():
     classes = ["container", "drop", "zbar"]
-    xml_folder_path = "/home/chli/yolo/test/1_png/"
-    save_folder_path = "/home/chli/yolo/test/1_png_yolo/"
+    xml_folder_path = "/home/chli/yolo/test/1_output/merge/"
+    save_folder_path = "/home/chli/yolo/test/1_output/yolo/"
     image_format = ".png"
 
     yolo_builder = YOLOBuilder()
