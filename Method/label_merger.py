@@ -273,11 +273,17 @@ class LabelMerger(object):
             return self.getRowFirstImagePositionList()
         return self.getColFirstImagePositionList()
 
-    def mergeImage(self, merge_image_basename, xml_file_basename_list, image_format):
+    def mergeImage(self,
+                   merge_image_basename,
+                   xml_file_basename_list,
+                   merge_image_size,
+                   image_format):
         '''
         Input :
             merge_image_basename : str e.g. "0"
             xml_file_basename_list : [xml_file_basename_1, ...]
+            merge_image_size : [merge_image_width, merge_image_height]
+                               set None to save image with source size
             image_format : str e.g. ".png"
         '''
         if len(xml_file_basename_list) == 0:
@@ -345,13 +351,31 @@ class LabelMerger(object):
             current_object_list = self.getObjectListWithLabel(image_idx,
                                                               self.merge_save_label_list)
 
-            #  print("image ", image_idx, "have ", len(current_object_list), "objects.")
-
             for current_object in current_object_list:
                 current_merge_object = current_object
-                current_merge_object.bbox = current_object.getMovedBBox(current_image_position[0],
-                                                                   current_image_position[1])
+                current_merge_object.bbox = current_object.getMovedBBox(
+                    current_image_position[0], current_image_position[1])
                 merge_object_list.append(current_merge_object)
+
+        merge_image_width_scale = 1.0
+        merge_image_height_scale = 1.0
+        if merge_image_size[0] is not None:
+            merge_image_width_scale = 1.0 * merge_image_size[0] / merge_image_width
+        if merge_image_size[1] is not None:
+            merge_image_height_scale = 1.0 * merge_image_size[1] / merge_image_height
+
+        if merge_image_width_scale != 1.0 or merge_image_height_scale != 1.0:
+            merge_image_width = int(merge_image_width * merge_image_width_scale)
+            merge_image_height = int(merge_image_height * merge_image_height_scale)
+            merge_image = cv2.resize(
+                merge_image, None,
+                fx=merge_image_width_scale,
+                fy=merge_image_height_scale,
+                interpolation = cv2.INTER_AREA)
+
+            for merge_object in merge_object_list:
+                merge_object.scaleBBox(merge_image_width_scale,
+                                       merge_image_height_scale)
 
         merge_image_basepath = self.merge_image_save_path + merge_image_basename
 
@@ -370,7 +394,16 @@ class LabelMerger(object):
         xml_builder.saveXML(merge_image_basepath + ".xml")
         return True
 
-    def mergeAllImage(self, merge_image_num, merge_image_time, image_format):
+    def mergeAllImage(self,
+                      merge_image_num,
+                      merge_image_time,
+                      merge_image_size,
+                      image_format):
+        '''
+        Input:
+            merge_image_size : [merge_image_width, merge_image_height]
+                               set None to save image with source size
+        '''
         if merge_image_num < 1:
             print("[ERROR][LabelMerger::mergeAllImage]")
             print("\t merge_image_num not valid!")
@@ -379,6 +412,10 @@ class LabelMerger(object):
             print("[WARN][LabelMerger::mergeAllImage]")
             print("\t merge_image_time not valid!")
             return True
+        if len(merge_image_size) != 2:
+            print("[ERROR][LabelMerger::mergeAllImage]")
+            print("\t merge_image_size not valid!")
+            return False
 
         merge_image_filename_list = os.listdir(self.source_image_folder_path)
         merge_image_xml_filename_list = []
@@ -402,7 +439,10 @@ class LabelMerger(object):
                 random_image_idx = randint(0, len(merge_image_xml_filename_list) - 1)
                 xml_file_basename_list.append(
                     merge_image_xml_filename_list[random_image_idx][:-4])
-            if not self.mergeImage(str(i), xml_file_basename_list, image_format):
+            if not self.mergeImage(str(i),
+                                   xml_file_basename_list,
+                                   merge_image_size,
+                                   image_format):
                 continue
         return True
 
@@ -410,11 +450,12 @@ def demo():
     source_image_folder_path = "/home/chli/yolo/test/1_output/cut/"
     merge_image_save_path = "/home/chli/yolo/test/1_output/merge/"
     merge_save_label_list = ["drop"]
-    merge_row_image_num = 2
-    merge_col_image_num = 5
+    merge_row_image_num = 4
+    merge_col_image_num = 4
     is_row_merge_first = True
-    merge_image_num = 9
+    merge_image_num = 16
     merge_image_time = 1
+    merge_image_size = [416 * 4, 416 * 4]
     image_format = ".png"
 
     label_merger = LabelMerger()
@@ -426,6 +467,7 @@ def demo():
                               is_row_merge_first)
     label_merger.mergeAllImage(merge_image_num,
                                merge_image_time,
+                               merge_image_size,
                                image_format)
     return True
 

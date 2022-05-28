@@ -7,6 +7,13 @@ class ImageObject(object):
         self.bbox = [xmin, ymin, xmax, ymax]
         return
 
+    def scaleBBox(self, x_scale, y_scale):
+        self.bbox[0] = int(self.bbox[0] * x_scale)
+        self.bbox[1] = int(self.bbox[1] * y_scale)
+        self.bbox[2] = int(self.bbox[2] * x_scale)
+        self.bbox[3] = int(self.bbox[3] * y_scale)
+        return True
+
     def getTransBBox(self, x_start, y_start):
         return [self.bbox[0] - x_start,
                 self.bbox[1] - y_start,
