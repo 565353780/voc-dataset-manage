@@ -383,9 +383,10 @@ class LabelMerger(object):
         merge_image_filename_list = os.listdir(self.source_image_folder_path)
         merge_image_xml_filename_list = []
 
-        print("[INFO][LabelMerger::mergeAllImage]")
-        print("start choose source image...")
-        for merge_image_filename in tqdm(merge_image_filename_list):
+        #  print("[INFO][LabelMerger::mergeAllImage]")
+        #  print("start choose source image...")
+        #  for merge_image_filename in tqdm(merge_image_filename_list):
+        for merge_image_filename in merge_image_filename_list:
             if merge_image_filename[-4:] != image_format:
                 continue
             merge_image_xml_filename_list.append(merge_image_filename)

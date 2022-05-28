@@ -34,7 +34,12 @@ class YOLOBuilder(object):
 
     def convertAnnotation(self, xml_file_basename):
         tree = None
-        with open(self.xml_folder_path + xml_file_basename + ".xml", "r") as in_file:
+        xml_file_path = self.xml_folder_path + xml_file_basename + ".xml"
+
+        if not os.path.exists(xml_file_path):
+            return True
+
+        with open(xml_file_path, "r") as in_file:
             tree = ET.parse(in_file)
         root = tree.getroot()
         size = root.find('size')

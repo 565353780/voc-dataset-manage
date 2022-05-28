@@ -224,9 +224,10 @@ class LabelCutter(object):
         cut_image_filename_list = os.listdir(self.source_image_folder_path)
         cut_image_xml_filename_list = []
 
-        print("[INFO][LabelCutter::cutAllImage]")
-        print("start choose labeled image...")
-        for cut_image_filename in tqdm(cut_image_filename_list):
+        #  print("[INFO][LabelCutter::cutAllImage]")
+        #  print("start choose labeled image...")
+        #  for cut_image_filename in tqdm(cut_image_filename_list):
+        for cut_image_filename in cut_image_filename_list:
             if cut_image_filename[-4:] != ".xml":
                 continue
             if cut_image_filename[:-4] + image_format not in cut_image_filename_list:
