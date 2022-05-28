@@ -68,6 +68,7 @@ def demo():
 def demo_multi():
     # Param
     source_folder_root = "/home/chli/chLi/Download/DeepLearning/Dataset/WaterDrop/20220419_cap/rgb_data/"
+    source_folder_name_list = os.listdir(source_folder_root)
     target_folder_root = "/home/chli/waterdrop_data/"
 
     source_format = ".png"
@@ -85,7 +86,17 @@ def demo_multi():
 
     classes = ["container", "drop", "zbar"]
 
-    source_folder_name_list = os.listdir(source_folder_root)
+    # Algorithm
+    all_folder_exist = True
+    for source_folder_name in source_folder_name_list:
+        source_folder_path = source_folder_root + source_folder_name + "/"
+        if not os.path.exists(source_folder_path):
+            all_folder_exist = False
+            print("[ERROR][auto_cut_and_merge::demo_multi]")
+            print("\t folder [" + source_folder_name + "] not exist!")
+
+    if not all_folder_exist:
+        return False
 
     for source_folder_name in source_folder_name_list:
         source_folder_path = source_folder_root + source_folder_name + "/"
@@ -94,7 +105,6 @@ def demo_multi():
         print("[INFO][auto_cut_and_merge::demo_multi]")
         print("\t start trans: " + source_folder_name + " ...")
 
-        # Algorithm
         target_image_folder_path = \
             target_folder_path + target_format.split(".")[1] + "/"
 
