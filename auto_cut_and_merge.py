@@ -139,6 +139,16 @@ def demo_multi():
                                 target_folder_path + "merge/",
                                 target_folder_path + "yolo/")
         yolo_builder.transLabel(target_format)
+
+    merge_train_txt_path = target_folder_root + "train.txt"
+    with open(merge_train_txt_path, "w") as f:
+        for source_folder_name in source_folder_name_list:
+            target_folder_path = target_folder_root + source_folder_name + "/"
+            target_train_txt_path = target_folder_path + "yolo/train.txt"
+
+            with open(target_train_txt_path, "r") as fr:
+                for line in fr.readlines():
+                    f.write(line)
     return True
 
 if __name__ == "__main__":
