@@ -37,6 +37,8 @@ class YOLOBuilder(object):
         xml_file_path = self.xml_folder_path + xml_file_basename + ".xml"
 
         if not os.path.exists(xml_file_path):
+            with open(self.xml_folder_path + xml_file_basename + ".txt", 'w') as out_file:
+                pass
             return True
 
         with open(xml_file_path, "r") as in_file:
