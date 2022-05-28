@@ -167,7 +167,7 @@ def demo_multi_merge_and_cut_merge():
     first_merge_col_image_num = 4
     first_is_row_merge_first = True
     first_merge_image_num = 16
-    first_merge_image_time = 300 * 16
+    first_merge_image_time = 300
     first_merge_image_size = [416 * 4, 416 * 4]
 
     cut_by_label_list = ["container"]

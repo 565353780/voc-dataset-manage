@@ -85,10 +85,11 @@ class YOLOBuilder(object):
                 continue
             xml_file_basename_list.append(xml_folder_filename_split_list[0])
 
-        print("[INFO][YOLOBuilder::transLabel]")
-        print("\t start convert annotations...")
+        #  print("[INFO][YOLOBuilder::transLabel]")
+        #  print("\t start convert annotations...")
         with open(self.save_folder_path + "train.txt", "w") as list_file:
-            for image_file_basename in tqdm(xml_file_basename_list):
+            #  for image_file_basename in tqdm(xml_file_basename_list):
+            for image_file_basename in xml_file_basename_list:
                 list_file.write(self.xml_folder_path + image_file_basename + image_format + "\n")
                 self.convertAnnotation(image_file_basename)
         return True
