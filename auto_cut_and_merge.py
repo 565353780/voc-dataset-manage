@@ -162,7 +162,7 @@ def demo_multi_merge_and_cut_merge():
     source_format = ".png"
     target_format = ".png"
 
-    first_merge_save_label_list = ["container", "drop", "zbar"]
+    first_merge_save_label_list = ["container", "zbar"]
     first_merge_row_image_num = 4
     first_merge_col_image_num = 4
     first_is_row_merge_first = True
